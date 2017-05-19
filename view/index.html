@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Лента</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" type="text/css"/>
+    <link rel="stylesheet" href="/css/style.css" type="text/css"/>
+</head>
+<body>
+<div class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="/" class="navbar-brand">Лента</a>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-2">
+            <h1>Список постов</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="posts-container col-md-8 col-md-offset-2">
+            <a href="post.php" id="post-add"><i class="glyphicon glyphicon-plus"></i></i>&nbsp;Добавить пост</a>
+            <?php if($data['posts']) { ?>
+            <?php foreach($data['posts'] as $post) { ?>
+            <article class="post clearfix<?php echo $post['trimmed'] ? ' trimmed':''; ?>" data-id="<?php echo $post['post_id']; ?>">
+                <h3>
+                    <a href="/single-post.php?id=<?php echo $post['post_id']; ?>"><?php echo $post['title']; ?></a>
+                </h3>
+                <div class="post-content">
+                    <?php echo $post['text'] ?>
+                </div>
+                <div class="post-controls pull-right">
+                    <button type="button" class="btn btn-default" onclick="editPost(this);">Править</button>
+                    <button type="button" class="btn btn-default" onclick="deletePost(this);">Удалить</button>
+                </div>
+            </article>
+            <?php } ?>
+            <?php } else { ?>
+            <h3>Пусто :(</h3>
+            <?php } ?>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+
+<script>
+    function editPost(_this) {
+        var $post = $(_this).closest('.post');
+        var id = $post.data('id');
+        window.location = 'post.php?id=' + id;
+    }
+    function deletePost(_this) {
+        var $post = $(_this).closest('.post');
+        var id = $post.data('id');
+        var data= {
+            'id': id
+        };
+        $.ajax({
+            url: 'post.php',
+            type: 'post',
+            data: data,
+            dataType: 'json',
+            success: function () {
+                $post.remove();
+            }
+        });
+    }
+    (function() {
+        $('.post.trimmed').each(function() {
+            var id = $(this).data('id');
+            var href = "/single-post.php?id=" + id;
+           $(this).find('.post-content p:first').append('...&nbsp;<a href=' + href + '>Подробнее</a>');
+        });
+    })();
+</script>
+
+</html>
+
+

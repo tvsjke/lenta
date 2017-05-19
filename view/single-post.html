@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Пост</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" type="text/css"/>
+    <link rel="stylesheet" href="/css/style.css" type="text/css"/>
+</head>
+<body>
+<div class="navbar navbar-default" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <a href="/" class="navbar-brand">Лента</a>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="single-post">
+                <h1>
+                    <?php echo $data['post']['title'] ?>
+                </h1>
+                <?php echo $data['post']['text'] ?>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-2">
+            <div class="comments">
+                <h3>Комментарии (<span id="comments-count"><?php echo count($data['comments']); ?></span>)</h3>
+                <div>
+                    <?php if($data['comments']) {
+                    foreach($data['comments'] as $comment) { ?>
+                    <div class="comment">
+                        <h4>
+                            <span><?php echo $comment['name'] ?></span>&nbsp;<span><?php echo $comment['email'] ?></span>
+                        </h4>
+                        <p><?php echo $comment['text'] ?></p>
+                    </div>
+                    <?php } } ?>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="add-comment">
+                <h3>Добавить комментарий</h3>
+                <form id="comment">
+                    <div class="form-group">
+                        <input type="text" name="name" class="form-control" placeholder="Имя">
+                        <span class="error">Имя не должно быть меньше 3 символов!</span>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" class="form-control" placeholder="Почта">
+                        <span class="error">Введите корректную почту!</span>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="comment" rows="10" class="form-control"></textarea>
+                        <span class="error">Длина комментария должна быть не менее 3 символов!</span>
+                    </div>
+                    <div class="errors"></div>
+                    <input type="hidden" name="id" value="<?php echo $data['post']['post_id'] ?>">
+                    <input type="hidden" name="add_comment" value="add">
+                    <button type="button" class="btn btn-default" onclick="sendForm(this.form);">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script>
+    function sendForm(form) {
+        $('.errors').html('');
+        $('.error').hide();
+        if($('[name="name"]').val().length < 3 ) {
+            $('[name="name"]').next().show();
+            return;
+        }
+        //ну тут без регескпа уже, извините
+        if($('[name="email"]').val().length < 4 ) {
+            $('[name="email"]').next().show();
+            return;
+        }
+        if($('[name="comment"]').val().length < 10 ) {
+            $('[name="comment"]').next().show();
+            return;
+        }
+        $.post('single-post.php', $(form).serialize()).done(function (data) {
+            var json = JSON.parse(data);
+            if (json['error']) {
+                json['error'].forEach(function (el) {
+                    $('.errors').append('<p>' + el + '</p>');
+                });
+            }
+            if (json['comment']) {
+                $('#comment')[0].reset();
+                $('.comments > div').prepend('<div class="comment"><h4><span>' + json['comment']['name'] + '</span>&nbsp;<span>' + json['comment']['email'] + '</span></h4><p>' + json['comment']['comment'] + '</p></div>');
+                $('#comments-count').text(+$('#comments-count').text() + 1);
+                console.log(json['comment']);
+            }
+        });
+    }
+</script>
+</body>
+</html>
